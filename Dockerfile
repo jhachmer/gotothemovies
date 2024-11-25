@@ -2,14 +2,18 @@ FROM golang:1.23
 
 WORKDIR /app
 
+# Install Task as build system
+RUN curl -L https://taskfile.dev/install.sh > install-task.sh
+RUN chmod +x ./install-task.sh
+RUN ./install-task.sh -b $HOME/.local/bin v3.40.0
+
 COPY go.mod ./
-
-RUN go mod download
-
+COPY Taskfile.yml ./
 COPY *.go ./
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /goto
+RUN mkdir bin
+RUN $HOME/.local/bin/task all
 
 EXPOSE 8080
 
-CMD ["/goto"]
+CMD ["bin/goto"]
