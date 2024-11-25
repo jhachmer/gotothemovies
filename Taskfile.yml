@@ -1,0 +1,49 @@
+# https://taskfile.dev
+version: 3
+
+vars:
+  dir: ./bin/
+  app_name: goto.exe
+
+tasks:
+  default:
+    desc: Default task which will be run if no target is specified
+    aliases:
+      - all
+    cmds:
+      # - task: setup
+      - task: tidy
+      - task: mod
+      - task: test
+      - task: build
+
+  setup:
+    cmds:
+      - cmd: mkdir {{.dir}}
+        platforms: [darwin, linux]
+      - cmd: powershell mkdir {{.dir}}*
+        platforms: [ windows ]
+
+  build:
+    deps: [clean]
+    cmds:
+      - go build -v -o {{.dir}}{{.app_name}} gotothemovies
+
+  test:
+    cmds:
+      - go test -v ./...
+
+  tidy:
+    cmds:
+      - go mod tidy
+
+  mod:
+    cmds:
+      - go mod download
+
+  clean:
+    cmds:
+      - cmd: rm -rf {{.dir}}*
+        platforms: [darwin, linux]
+      - cmd: powershell rm {{.dir}}*
+        platforms: [windows]
