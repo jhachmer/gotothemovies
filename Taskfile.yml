@@ -3,7 +3,8 @@ version: 3
 
 vars:
   dir: ./bin/
-  app_name: goto.exe
+  app_name_windows: goto.exe
+  app_name_linux: goto
 
 tasks:
   default:
@@ -27,8 +28,10 @@ tasks:
   build:
     deps: [clean]
     cmds:
-      - go build -v -o {{.dir}}{{.app_name}} gotothemovies
-
+      - cmd: go build -v -o {{.dir}}{{.app_name_windows}} gotothemovies
+        platforms: [windows]
+      - cmd: go build -v -o {{.dir}}{{.app_name_linux}} gotothemovies
+        platforms: [darwin, linux]
   test:
     cmds:
       - go test -v ./...
