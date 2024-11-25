@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/fs"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -26,33 +25,25 @@ func FileStreamer(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, fullPath)
 }
 
-type File struct {
-	Name     string
-	FileInfo fs.FileInfo
-}
-
 func ListMovies(w http.ResponseWriter, r *http.Request) {
 	filmDir := "./films"
-	entries, err := os.ReadDir(filmDir)
+	validFiles, err := FindValidFiles(filmDir, ".mp4")
 	if err != nil {
 		http.NotFound(w, r)
+		return
 	}
-	jsonEncoder := json.NewEncoder(w)
-	for _, entry := range entries {
-		if name := entry.Name(); ValidateMovieFile(name) {
-			info, err := entry.Info()
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-			}
-			fi := File{
-				Name:     name,
-				FileInfo: info,
-			}
-			err = jsonEncoder.Encode(fi)
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-		}
+	err = json.NewEncoder(w).Encode(validFiles)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+func HealthHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	err := json.NewEncoder(w).Encode(map[string]string{"alive": "true"})
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
