@@ -32,7 +32,7 @@ RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
     && task all; \
   fi
 
-RUN $HOME/.local/bin/task all
+#RUN $HOME/.local/bin/task all
 
 EXPOSE 8080
 
