@@ -1,8 +1,9 @@
-package main
+package server
 
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/jhachmer/gotothemovies/pkg/util"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -27,7 +28,7 @@ func FileStreamer(w http.ResponseWriter, r *http.Request) {
 
 func ListMovies(w http.ResponseWriter, r *http.Request) {
 	filmDir := "./films"
-	validFiles, err := FindValidFiles(filmDir, ".mp4")
+	validFiles, err := util.FindValidFiles(filmDir, ".mp4")
 	if err != nil {
 		http.NotFound(w, r)
 		return
