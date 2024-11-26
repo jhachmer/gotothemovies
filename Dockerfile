@@ -28,7 +28,7 @@ RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
     && $HOME/.local/bin/task all; \
     elif [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then \
     wget https://github.com/go-task/task/releases/download/v3.40.0/task_linux_arm.deb \
-    && sudo dpkg -i task_linux_arm.deb \
+    && dpkg -i task_linux_arm.deb \
     && rm task_linux_arm.deb \
     && /usr/bin/task all; \
   fi
