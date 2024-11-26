@@ -5,6 +5,7 @@ vars:
   dir: ./bin/
   app_name_windows: goto.exe
   app_name_linux: goto
+  main_file: ./cmd/goto/main.go
 
 tasks:
   default:
@@ -28,9 +29,9 @@ tasks:
   build:
     deps: [clean]
     cmds:
-      - cmd: go build -v -o {{.dir}}{{.app_name_windows}} gotothemovies
+      - cmd: go build -v -o {{.dir}}{{.app_name_windows}} {{.main_file}}
         platforms: [windows]
-      - cmd: go build -v -o {{.dir}}{{.app_name_linux}} gotothemovies
+      - cmd: go build -v -o {{.dir}}{{.app_name_linux}} {{.main_file}}
         platforms: [darwin, linux]
   test:
     cmds:
