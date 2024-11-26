@@ -2,16 +2,29 @@ FROM golang:1.23
 
 WORKDIR /app
 
+ARG TARGETPLATFORM
+
 # Install Task as build system
-RUN curl -L https://taskfile.dev/install.sh > install-task.sh
-RUN chmod +x ./install-task.sh
-RUN ./install-task.sh -b $HOME/.local/bin v3.40.0
+# install script apparently does not work on 32-bit Raspi so this ugly thing is needed
+# see https://github.com/go-task/task/issues/1516#issuecomment-2347395883
+RUN echo "$TARGETPLATFORM"
+RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
+    curl -L https://taskfile.dev/install.sh > install-task.sh \
+    && chmod +x ./install-task.sh \
+    && ./install-task.sh -b $HOME/.local/bin v3.40.0; \
+    elif [ "$TARGETPLATFORM" = "linux/armv7" ]; then \
+    wget https://github.com/go-task/task/releases/download/v3.40.0/task_linux_arm.deb \
+    && sudo dpkg -i task_linux_arm.deb; \
+  fi
 
 COPY Taskfile.yml ./
 COPY go.mod ./
+
 COPY internal/ ./internal
 COPY pkg/ ./pkg
 COPY cmd/ ./cmd
+
+RUN go mod download && go mod verify
 
 RUN mkdir bin
 RUN $HOME/.local/bin/task all
