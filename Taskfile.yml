@@ -13,7 +13,7 @@ tasks:
     aliases:
       - all
     cmds:
-      # - task: setup
+      - task: setup
       - task: tidy
       - task: mod
       - task: test
@@ -23,7 +23,7 @@ tasks:
     cmds:
       - cmd: mkdir {{.dir}}
         platforms: [darwin, linux]
-      - cmd: powershell mkdir {{.dir}}*
+      - cmd: powershell mkdir {{.dir}}
         platforms: [ windows ]
 
   build:

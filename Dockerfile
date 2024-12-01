@@ -4,11 +4,7 @@ WORKDIR /app
 
 ARG TARGETPLATFORM
 
-# Install Task as build system
-# install script apparently does not work on 32-bit Raspi so this ugly thing is needed
-# see https://github.com/go-task/task/issues/1516#issuecomment-2347395883
 RUN echo "$TARGETPLATFORM"
-
 
 COPY Taskfile.yml ./
 COPY go.mod ./
@@ -19,8 +15,11 @@ COPY cmd/ ./cmd
 
 RUN go mod download && go mod verify
 
-RUN mkdir bin
+# RUN mkdir bin
 
+# Install Task as build system
+# install script apparently does not work on 32-bit Raspi so this ugly thing is needed
+# see https://github.com/go-task/task/issues/1516#issuecomment-2347395883
 RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
     curl -L https://taskfile.dev/install.sh > install-task.sh \
     && chmod +x ./install-task.sh \
@@ -32,8 +31,6 @@ RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
     && rm task_linux_arm.deb \
     && /usr/bin/task all; \
   fi
-
-#RUN $HOME/.local/bin/task all
 
 EXPOSE 8080
 
