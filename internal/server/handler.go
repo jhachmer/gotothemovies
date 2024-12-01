@@ -1,12 +1,12 @@
 package server
 
 import (
-	"encoding/json"
 	"fmt"
-	"github.com/jhachmer/gotothemovies/pkg/util"
 	"net/http"
 	"os"
 	"path/filepath"
+
+	"github.com/jhachmer/gotothemovies/pkg/util"
 )
 
 func FileStreamer(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +33,7 @@ func ListMovies(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	err = json.NewEncoder(w).Encode(validFiles)
+	err = Encode(w, r, http.StatusOK, validFiles)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -41,9 +41,8 @@ func ListMovies(w http.ResponseWriter, r *http.Request) {
 }
 
 func HealthHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
-	err := json.NewEncoder(w).Encode(map[string]string{"alive": "true"})
+	err := Encode(w, r, http.StatusOK, map[string]string{"alive": "true"})
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
