@@ -8,6 +8,7 @@ import (
 
 type Middleware func(handlerFunc http.HandlerFunc) http.HandlerFunc
 
+// Chain is called with an HandlerFunc and one or more Middleware functions
 func Chain(f http.HandlerFunc, middlewares ...Middleware) http.HandlerFunc {
 	for _, m := range middlewares {
 		f = m(f)
