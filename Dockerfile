@@ -9,7 +9,6 @@ RUN echo "$TARGETPLATFORM"
 COPY Taskfile.yml ./
 COPY go.mod ./
 
-COPY internal/ ./internal
 COPY pkg/ ./pkg
 COPY cmd/ ./cmd
 
