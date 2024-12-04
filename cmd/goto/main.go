@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/jhachmer/gotothemovies/internal/server"
+	"github.com/jhachmer/gotothemovies/pkg/server"
 	"log"
 	"os"
 )
