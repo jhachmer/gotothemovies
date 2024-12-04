@@ -13,6 +13,7 @@ tasks:
     aliases:
       - all
     cmds:
+      - task: clean
       - task: setup
       - task: tidy
       - task: mod
@@ -49,5 +50,5 @@ tasks:
     cmds:
       - cmd: rm -rf {{.dir}}*
         platforms: [darwin, linux]
-      - cmd: powershell rm {{.dir}}*
+      - cmd: powershell rm {{.dir}}* && powershell Remove-Item {{.dir}} -Force
         platforms: [windows]
