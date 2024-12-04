@@ -1,4 +1,4 @@
-package server
+package util
 
 import (
 	"encoding/json"
@@ -6,9 +6,9 @@ import (
 	"net/http"
 )
 
-func Decode[T any](r *http.Request) (T, error) {
+func Decode[T any](r *http.Response) (T, error) {
 	var v T
-	if err := json.NewDecoder(r.Body).Decode(v); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&v); err != nil {
 		return v, fmt.Errorf("json decode err: %w", err)
 	}
 	return v, nil
