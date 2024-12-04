@@ -2,10 +2,12 @@ package media
 
 import (
 	"fmt"
-	"github.com/jhachmer/gotothemovies/internal/config"
-	"github.com/jhachmer/gotothemovies/internal/server"
+	"github.com/jhachmer/gotothemovies/pkg/config"
+	"github.com/jhachmer/gotothemovies/pkg/util"
 	"net/http"
 	"net/url"
+	"strconv"
+	"strings"
 )
 
 type OmdbRequest interface {
@@ -18,7 +20,7 @@ type OmdbIDRequest struct {
 
 type OmdbTitleRequest struct {
 	title string
-	year  string
+	year  int
 }
 
 func NewOmdbIDRequest(imdbID string) *OmdbIDRequest {
@@ -27,7 +29,7 @@ func NewOmdbIDRequest(imdbID string) *OmdbIDRequest {
 	}
 }
 
-func NewOmdbTitleRequest(title, year string) *OmdbTitleRequest {
+func NewOmdbTitleRequest(title string, year int) *OmdbTitleRequest {
 	return &OmdbTitleRequest{
 		title: title,
 		year:  year,
@@ -61,21 +63,28 @@ func (r OmdbIDRequest) SendRequest() (*Movie, error) {
 }
 
 func makeRequestURL(r OmdbRequest) (string, error) {
-	baseURL := "http://www.omdbapi.com/?apikey="
-	apiKey := config.Envs.OmdbApiKey
+	reqURL, err := url.Parse(fmt.Sprintf("http://www.omdbapi.com/?apikey=%s", config.Envs.OmdbApiKey))
+	if err != nil {
+		return "", err
+	}
 	switch v := r.(type) {
 	case OmdbTitleRequest:
-		joinedURL, err := url.JoinPath(baseURL, apiKey, "&t=", v.title, "&y=", v.year)
+		values := reqURL.Query()
+		values.Add("t", v.title)
+		values.Add("y", strconv.Itoa(v.year))
 		if err != nil {
 			return "", err
 		}
-		return joinedURL, nil
+		reqURL.RawQuery = values.Encode()
+		return reqURL.String(), nil
 	case OmdbIDRequest:
-		joinedURL, err := url.JoinPath(baseURL, apiKey, "&i=", v.imdbID)
+		values := reqURL.Query()
+		values.Add("i", v.imdbID)
 		if err != nil {
 			return "", err
 		}
-		return joinedURL, nil
+		reqURL.RawQuery = values.Encode()
+		return reqURL.String(), nil
 	default:
 		return "", fmt.Errorf("no valid request type")
 	}
@@ -83,13 +92,20 @@ func makeRequestURL(r OmdbRequest) (string, error) {
 
 func decodeRequest(requestURL string) (Movie, error) {
 	var mov Movie
-	res, err := getRequest(requestURL)
+	req, err := getRequest(requestURL)
 	if err != nil {
 		return mov, err
 	}
-	mov, err = server.Decode[Movie](res)
+	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return mov, err
+	}
+	mov, err = util.Decode[Movie](res)
+	if err != nil {
+		return mov, err
+	}
+	if !checkIfResponseTrue(mov) {
+		return Movie{}, fmt.Errorf("response value is false")
 	}
 	return mov, nil
 }
@@ -100,4 +116,8 @@ func getRequest(requestURL string) (*http.Request, error) {
 		return nil, err
 	}
 	return res, nil
+}
+
+func checkIfResponseTrue(mov Movie) bool {
+	return strings.ToLower(mov.Response) == "true"
 }
