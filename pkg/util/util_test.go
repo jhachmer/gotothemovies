@@ -2,9 +2,17 @@ package util
 
 import (
 	"os"
+	"path/filepath"
 	"reflect"
 	"testing"
 )
+
+func closeTempFiles(files []*os.File) {
+	for _, f := range files {
+		f.Close()
+		//os.Remove(f.Name())
+	}
+}
 
 func TestFilter(t *testing.T) {
 	type args[T any] struct {
@@ -46,23 +54,24 @@ func TestFilter(t *testing.T) {
 }
 
 func TestFindValidFiles(t *testing.T) {
+	fileNames := []string{"test*.mp3", "test*.mp4", "test*.mkv"}
 	tempDir := t.TempDir()
-	// log.Println(tempDir)
-	temp1, err := os.CreateTemp(tempDir, "test*.mp3")
-	if err != nil {
-		t.Fatal("Failed to create temp file")
+	tempFiles := make([]*os.File, 0)
+	for _, name := range fileNames {
+		temp, err := os.CreateTemp(tempDir, name)
+		tempFiles = append(tempFiles, temp)
+		if err != nil {
+			t.Fatal("Failed to create temp file")
+		}
 	}
-	temp2, err := os.CreateTemp(tempDir, "test*.mp4")
-	if err != nil {
-		t.Fatal("Failed to create temp file")
+	returnFileName := func(s string) string {
+		_, r := filepath.Split(s)
+		return r
 	}
-	defer temp1.Close()
-	defer temp2.Close()
-	defer os.Remove(temp1.Name())
-	defer os.Remove(temp2.Name())
+	defer closeTempFiles(tempFiles)
 	type args struct {
 		root string
-		ext  string
+		ext  []string
 	}
 	tests := []struct {
 		name    string
@@ -70,14 +79,14 @@ func TestFindValidFiles(t *testing.T) {
 		want    []DirFiles
 		wantErr bool
 	}{
-		{name: "", args: args{
+		{name: "Find mp4 and mkv", args: args{
 			root: tempDir,
-			ext:  ".mp4",
-		}, want: []DirFiles{{Name: temp2.Name()}}, wantErr: false},
+			ext:  []string{".mp4", ".mkv"},
+		}, want: []DirFiles{{Name: returnFileName(tempFiles[1].Name())}, {Name: returnFileName(tempFiles[2].Name())}}, wantErr: false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := FindValidFiles(tt.args.root, tt.args.ext)
+			got, err := FindValidFiles(tt.args.root, tt.args.ext...)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FindValidFiles() error = %v, wantErr %v", err, tt.wantErr)
 				return

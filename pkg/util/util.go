@@ -3,20 +3,21 @@ package util
 import (
 	"io/fs"
 	"path/filepath"
+	"slices"
 )
 
 type DirFiles struct {
-	Name string
+	Name string `json:"name,omitempty"`
 }
 
-func FindValidFiles(root, ext string) ([]DirFiles, error) {
+func FindValidFiles(root string, ext ...string) ([]DirFiles, error) {
 	files := make([]DirFiles, 0)
 	_ = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
-		if filepath.Ext(d.Name()) == ext {
-			file := DirFiles{Name: path}
+		if slices.Contains(ext, filepath.Ext(d.Name())) {
+			file := DirFiles{Name: d.Name()}
 			files = append(files, file)
 		}
 		return nil
