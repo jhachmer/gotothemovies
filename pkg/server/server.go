@@ -24,8 +24,8 @@ func NewServer(addr string, logger *log.Logger) *Server {
 // Handlers are wrapped with Middleware
 func (svr *Server) setupRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /health", Chain(HealthHandler, Logging(svr.Logger)))
-	mux.HandleFunc("GET /films/{name}/watch", Chain(FileStreamer, Logging(svr.Logger)))
-	mux.HandleFunc("GET /films/{name}", Chain(InfoHandler, Logging(svr.Logger)))
+	mux.HandleFunc("GET /films/{name}", Chain(FileStreamer, Logging(svr.Logger)))
+	mux.HandleFunc("GET /films/{name}/info", Chain(InfoHandler, Logging(svr.Logger)))
 	mux.HandleFunc("GET /films", Chain(ListMovies, Logging(svr.Logger)))
 }
 
