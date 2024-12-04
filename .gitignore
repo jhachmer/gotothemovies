@@ -2,3 +2,5 @@
 films/
 
 bin/
+
+.env
